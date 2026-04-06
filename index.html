@@ -1,4 +1,4 @@
-<!-- ===================== index.html ===================== --><!DOCTYPE html><html lang="pt-BR">
+<!DOCTYPE html><html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,37 +19,91 @@ body {
   padding: 20px;
   margin-bottom: 20px;
 }
-.preview { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.preview img { width: 100%; border-radius: 12px; }
-button {
-  padding: 10px;
+
+input, select {
+  background: #1a1a1a;
+  color: #d8c7a3;
+  border: 1px solid #d8c7a3;
   border-radius: 10px;
+  padding: 10px;
+  margin: 5px 0;
+}
+
+input[type="file"]::-webkit-file-upload-button {
+  background: #d8c7a3;
+  color: #000;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button {
+  padding: 12px 20px;
+  border-radius: 12px;
   border: none;
   background: #d8c7a3;
   color: #000;
+  cursor: pointer;
 }
+
+.preview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.preview img {
+  width: 100%;
+  border-radius: 12px;
+}
+
+.drop-zone {
+  border: 2px dashed #d8c7a3;
+  padding: 20px;
+  text-align: center;
+  border-radius: 12px;
+  margin-top: 10px;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+input[type="range"] {
+  width: 100%;
+}
+
 </style></head>
 <body><div class="container">
   <h1>Conversor PRO</h1>  <div class="card">
-    <input type="file" id="files" multiple accept="image/*"><br><select id="format">
+    <input type="file" id="files" multiple accept="image/*"><div class="drop-zone" id="dropZone">
+  Arraste imagens aqui 👀
+</div>
+
+<select id="format">
   <option value="image/png">PNG</option>
   <option value="image/jpeg">JPG</option>
   <option value="image/webp">WEBP</option>
 </select>
 
-<br>
-
-Qualidade: <span id="qVal">1</span>
+<div class="slider-container">
+  Qualidade: <span id="qVal">1</span>
+</div>
 <input type="range" id="quality" min="0.1" max="1" step="0.1" value="1">
 
 <br>
 
-Largura: <input type="number" id="width">
-Altura: <input type="number" id="height">
+Largura: <input type="number" id="width" placeholder="auto">
+Altura: <input type="number" id="height" placeholder="auto">
 
 <br><br>
 
 <button onclick="convertAll()">Converter</button>
+<button onclick="downloadZip()">Baixar tudo (ZIP)</button>
 
   </div>  <div class="card">
     <h3>Preview</h3>
@@ -58,10 +112,25 @@ Altura: <input type="number" id="height">
     <h3>Downloads</h3>
     <div id="downloads"></div>
   </div>
-</div><script>
+</div><script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script><script>
+let convertedFiles = [];
+
 const q = document.getElementById('quality');
 const qVal = document.getElementById('qVal');
 q.oninput = () => qVal.innerText = q.value;
+
+// Drag & Drop
+const dropZone = document.getElementById('dropZone');
+dropZone.ondragover = e => {
+  e.preventDefault();
+  dropZone.style.background = '#222';
+}
+dropZone.ondragleave = () => dropZone.style.background = '';
+dropZone.ondrop = e => {
+  e.preventDefault();
+  document.getElementById('files').files = e.dataTransfer.files;
+  dropZone.style.background = '';
+}
 
 async function convertAll() {
   const files = document.getElementById('files').files;
@@ -74,6 +143,7 @@ async function convertAll() {
   const downloads = document.getElementById('downloads');
   preview.innerHTML = '';
   downloads.innerHTML = '';
+  convertedFiles = [];
 
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
@@ -97,13 +167,16 @@ async function convertAll() {
 
           const out = canvas.toDataURL(format, quality);
 
+          // salvar pra zip
+          convertedFiles.push({ data: out, name: `img_${i}` });
+
           // preview
           const div = document.createElement('div');
           div.className = 'preview';
           div.innerHTML = `<img src="${img.src}"><img src="${out}">`;
           preview.appendChild(div);
 
-          // download
+          // download individual
           const a = document.createElement('a');
           a.href = out;
           a.download = `img_${i}`;
@@ -119,9 +192,27 @@ async function convertAll() {
   }
 }
 
+// ZIP download
+async function downloadZip() {
+  if (convertedFiles.length === 0) return alert('Converte algo primeiro 😅');
+
+  const zip = new JSZip();
+
+  convertedFiles.forEach(file => {
+    const base64 = file.data.split(',')[1];
+    zip.file(file.name + '.png', base64, { base64: true });
+  });
+
+  const blob = await zip.generateAsync({ type: 'blob' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'imagens.zip';
+  link.click();
+}
+
 // Service Worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
 }
 </script></body>
-</html>
+  </html>
