@@ -1,0 +1,127 @@
+<!-- ===================== index.html ===================== --><!DOCTYPE html><html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conversor PRO</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0a0a"><style>
+body {
+  background: #0a0a0a;
+  color: #d8c7a3;
+  font-family: 'Montserrat', sans-serif;
+  margin: 0;
+  padding: 20px;
+}
+.container { max-width: 1100px; margin: auto; }
+.card {
+  background: #111;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.preview { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.preview img { width: 100%; border-radius: 12px; }
+button {
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: #d8c7a3;
+  color: #000;
+}
+</style></head>
+<body><div class="container">
+  <h1>Conversor PRO</h1>  <div class="card">
+    <input type="file" id="files" multiple accept="image/*"><br><select id="format">
+  <option value="image/png">PNG</option>
+  <option value="image/jpeg">JPG</option>
+  <option value="image/webp">WEBP</option>
+</select>
+
+<br>
+
+Qualidade: <span id="qVal">1</span>
+<input type="range" id="quality" min="0.1" max="1" step="0.1" value="1">
+
+<br>
+
+Largura: <input type="number" id="width">
+Altura: <input type="number" id="height">
+
+<br><br>
+
+<button onclick="convertAll()">Converter</button>
+
+  </div>  <div class="card">
+    <h3>Preview</h3>
+    <div id="preview"></div>
+  </div>  <div class="card">
+    <h3>Downloads</h3>
+    <div id="downloads"></div>
+  </div>
+</div><script>
+const q = document.getElementById('quality');
+const qVal = document.getElementById('qVal');
+q.oninput = () => qVal.innerText = q.value;
+
+async function convertAll() {
+  const files = document.getElementById('files').files;
+  const format = document.getElementById('format').value;
+  const quality = parseFloat(q.value);
+  const wInput = document.getElementById('width').value;
+  const hInput = document.getElementById('height').value;
+
+  const preview = document.getElementById('preview');
+  const downloads = document.getElementById('downloads');
+  preview.innerHTML = '';
+  downloads.innerHTML = '';
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const reader = new FileReader();
+
+    await new Promise(res => {
+      reader.onload = e => {
+        const img = new Image();
+        img.src = e.target.result;
+
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+
+          let w = wInput || img.width;
+          let h = hInput || img.height;
+
+          canvas.width = w;
+          canvas.height = h;
+          ctx.drawImage(img, 0, 0, w, h);
+
+          const out = canvas.toDataURL(format, quality);
+
+          // preview
+          const div = document.createElement('div');
+          div.className = 'preview';
+          div.innerHTML = `<img src="${img.src}"><img src="${out}">`;
+          preview.appendChild(div);
+
+          // download
+          const a = document.createElement('a');
+          a.href = out;
+          a.download = `img_${i}`;
+          a.innerText = `Baixar ${i+1}`;
+          a.style.display = 'block';
+          downloads.appendChild(a);
+
+          res();
+        }
+      }
+      reader.readAsDataURL(file);
+    });
+  }
+}
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+</script></body>
+</html>
