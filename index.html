@@ -2,7 +2,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Conversor PRO</title>
+<title>Converter PRO</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0a0a0a"><style>
 body {
@@ -79,7 +79,7 @@ input[type="range"] {
 
 </style></head>
 <body><div class="container">
-  <h1>Conversor PRO</h1>  <div class="card">
+  <h1>Converter PRO</h1>  <div class="card">
     <input type="file" id="files" multiple accept="image/*"><div class="drop-zone" id="dropZone">
   Drag images here
 </div>
@@ -119,7 +119,6 @@ const q = document.getElementById('quality');
 const qVal = document.getElementById('qVal');
 q.oninput = () => qVal.innerText = q.value;
 
-// Drag & Drop
 const dropZone = document.getElementById('dropZone');
 dropZone.ondragover = e => {
   e.preventDefault();
@@ -166,17 +165,14 @@ async function convertAll() {
           ctx.drawImage(img, 0, 0, w, h);
 
           const out = canvas.toDataURL(format, quality);
-
-          // salvar pra zip
+          
           convertedFiles.push({ data: out, name: `img_${i}` });
 
-          // preview
           const div = document.createElement('div');
           div.className = 'preview';
           div.innerHTML = `<img src="${img.src}"><img src="${out}">`;
           preview.appendChild(div);
 
-          // download individual
           const a = document.createElement('a');
           a.href = out;
           a.download = `img_${i}`;
@@ -192,7 +188,6 @@ async function convertAll() {
   }
 }
 
-// ZIP download
 async function downloadZip() {
   if (convertedFiles.length === 0) return alert('Convert something first.');
 
@@ -210,7 +205,6 @@ async function downloadZip() {
   link.click();
 }
 
-// Service Worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
 }
