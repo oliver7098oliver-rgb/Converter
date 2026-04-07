@@ -81,7 +81,7 @@ input[type="range"] {
 <body><div class="container">
   <h1>Conversor PRO</h1>  <div class="card">
     <input type="file" id="files" multiple accept="image/*"><div class="drop-zone" id="dropZone">
-  Arraste imagens aqui 👀
+  Drag images here
 </div>
 
 <select id="format">
@@ -91,19 +91,19 @@ input[type="range"] {
 </select>
 
 <div class="slider-container">
-  Qualidade: <span id="qVal">1</span>
+  Quality: <span id="qVal">1</span>
 </div>
 <input type="range" id="quality" min="0.1" max="1" step="0.1" value="1">
 
 <br>
 
-Largura: <input type="number" id="width" placeholder="auto">
-Altura: <input type="number" id="height" placeholder="auto">
+Width: <input type="number" id="width" placeholder="auto">
+Height: <input type="number" id="height" placeholder="auto">
 
 <br><br>
 
-<button onclick="convertAll()">Converter</button>
-<button onclick="downloadZip()">Baixar tudo (ZIP)</button>
+<button onclick="convertAll()">Convert</button>
+<button onclick="downloadZip()">Download</button>
 
   </div>  <div class="card">
     <h3>Preview</h3>
@@ -194,7 +194,7 @@ async function convertAll() {
 
 // ZIP download
 async function downloadZip() {
-  if (convertedFiles.length === 0) return alert('Converte algo primeiro 😅');
+  if (convertedFiles.length === 0) return alert('Convert something first.');
 
   const zip = new JSZip();
 
