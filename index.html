@@ -25,7 +25,6 @@ body {
   margin-bottom: 20px;
 }
 
-/* FILE INPUT CUSTOM */
 .file-label {
   display: flex;
   align-items: center;
@@ -37,9 +36,7 @@ body {
   cursor: pointer;
 }
 
-.file-label input {
-  display: none;
-}
+.file-label input { display: none; }
 
 .file-btn {
   background: #d8c7a3;
@@ -54,7 +51,6 @@ body {
   font-size: 14px;
 }
 
-/* INPUTS */
 input, select {
   background: #1a1a1a;
   color: #d8c7a3;
@@ -64,7 +60,6 @@ input, select {
   margin: 5px 0;
 }
 
-/* BUTTONS */
 button {
   padding: 12px 20px;
   border-radius: 12px;
@@ -75,7 +70,6 @@ button {
   margin-right: 10px;
 }
 
-/* PREVIEW */
 .preview {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -88,7 +82,6 @@ button {
   border-radius: 12px;
 }
 
-/* DROP ZONE */
 .drop-zone {
   border: 2px dashed #d8c7a3;
   padding: 20px;
@@ -98,17 +91,13 @@ button {
   transition: 0.2s;
 }
 
-/* SLIDER */
 .slider-container {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-input[type="range"] {
-  width: 100%;
-}
-
+input[type="range"] { width: 100%; }
 </style>
 </head>
 
@@ -119,39 +108,34 @@ input[type="range"] {
 
   <div class="card">
 
-    <!-- FILE INPUT -->
     <label class="file-label">
       <input type="file" id="files" multiple accept="image/*">
       <span class="file-btn">Choose files</span>
       <span class="file-name" id="fileText">No file selected</span>
     </label>
 
-    <!-- DROP -->
     <div class="drop-zone" id="dropZone">
       Drop images here or tap above 👀
     </div>
 
-    <!-- FORMAT -->
     <select id="format">
       <option value="image/png">PNG</option>
       <option value="image/jpeg">JPG</option>
       <option value="image/webp">WEBP</option>
     </select>
 
-    <!-- QUALITY -->
     <div class="slider-container">
       Quality: <span id="qVal">1</span>
     </div>
     <input type="range" id="quality" min="0.1" max="1" step="0.1" value="1">
 
-    <!-- SIZE -->
     <br>
+
     Width: <input type="number" id="width" placeholder="auto">
     Height: <input type="number" id="height" placeholder="auto">
 
     <br><br>
 
-    <!-- BUTTONS -->
     <button onclick="convertAll()">Convert</button>
     <button onclick="downloadZip()">Download ZIP</button>
 
@@ -186,13 +170,9 @@ const fileText = document.getElementById('fileText');
 fileInput.onchange = () => {
   const count = fileInput.files.length;
 
-  if (count === 0) {
-    fileText.innerText = "No file selected";
-  } else if (count === 1) {
-    fileText.innerText = "1 file selected";
-  } else {
-    fileText.innerText = `${count} files selected`;
-  }
+  if (count === 0) fileText.innerText = "No file selected";
+  else if (count === 1) fileText.innerText = "1 file selected";
+  else fileText.innerText = `${count} files selected`;
 };
 
 // DRAG & DROP
@@ -232,7 +212,6 @@ async function convertAll() {
   convertedFiles = [];
 
   for (let i = 0; i < files.length; i++) {
-    const file = files[i];
     const reader = new FileReader();
 
     await new Promise(res => {
@@ -254,18 +233,13 @@ async function convertAll() {
 
           const out = canvas.toDataURL(format, quality);
 
-          convertedFiles.push({
-            data: out,
-            name: `img_${i}`
-          });
+          convertedFiles.push({ data: out, name: `img_${i}` });
 
-          // PREVIEW
           const div = document.createElement('div');
           div.className = 'preview';
           div.innerHTML = `<img src="${img.src}"><img src="${out}">`;
           preview.appendChild(div);
 
-          // DOWNLOAD
           const a = document.createElement('a');
           a.href = out;
           a.download = `img_${i}`;
@@ -277,7 +251,7 @@ async function convertAll() {
         };
       };
 
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(files[i]);
     });
   }
 }
@@ -311,107 +285,4 @@ if ('serviceWorker' in navigator) {
 </script>
 
 </body>
-  </html>    <h3>Preview</h3>
-    <div id="preview"></div>
-  </div>  <div class="card">
-    <h3>Downloads</h3>
-    <div id="downloads"></div>
-  </div>
-</div><script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script><script>
-let convertedFiles = [];
-
-const q = document.getElementById('quality');
-const qVal = document.getElementById('qVal');
-q.oninput = () => qVal.innerText = q.value;
-
-const dropZone = document.getElementById('dropZone');
-dropZone.ondragover = e => {
-  e.preventDefault();
-  dropZone.style.background = '#222';
-}
-dropZone.ondragleave = () => dropZone.style.background = '';
-dropZone.ondrop = e => {
-  e.preventDefault();
-  document.getElementById('files').files = e.dataTransfer.files;
-  dropZone.style.background = '';
-}
-
-async function convertAll() {
-  const files = document.getElementById('files').files;
-  const format = document.getElementById('format').value;
-  const quality = parseFloat(q.value);
-  const wInput = document.getElementById('width').value;
-  const hInput = document.getElementById('height').value;
-
-  const preview = document.getElementById('preview');
-  const downloads = document.getElementById('downloads');
-  preview.innerHTML = '';
-  downloads.innerHTML = '';
-  convertedFiles = [];
-
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const reader = new FileReader();
-
-    await new Promise(res => {
-      reader.onload = e => {
-        const img = new Image();
-        img.src = e.target.result;
-
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-
-          let w = wInput || img.width;
-          let h = hInput || img.height;
-
-          canvas.width = w;
-          canvas.height = h;
-          ctx.drawImage(img, 0, 0, w, h);
-
-          const out = canvas.toDataURL(format, quality);
-          
-          convertedFiles.push({ data: out, name: `img_${i}` });
-
-          const div = document.createElement('div');
-          div.className = 'preview';
-          div.innerHTML = `<img src="${img.src}"><img src="${out}">`;
-          preview.appendChild(div);
-
-          const a = document.createElement('a');
-          a.href = out;
-          a.download = `img_${i}`;
-          a.innerText = `Baixar ${i+1}`;
-          a.style.display = 'block';
-          downloads.appendChild(a);
-
-          res();
-        }
-      }
-      reader.readAsDataURL(file);
-    });
-  }
-}
-
-async function downloadZip() {
-  if (convertedFiles.length === 0) return alert('Convert something first.');
-
-  const zip = new JSZip();
-
-  convertedFiles.forEach(file => {
-    const base64 = file.data.split(',')[1];
-    zip.file(file.name + '.png', base64, { base64: true });
-  });
-
-  const blob = await zip.generateAsync({ type: 'blob' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'imagens.zip';
-  link.click();
-}
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
-}
-</script></body>
   </html>
